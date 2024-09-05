@@ -5,7 +5,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ActivityIndicator, Appbar } from 'react-native-paper';
 import { IconButton } from '../components';
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
-import { Audio } from 'expo-av';
+import { Audio, AVPlaybackStatus } from 'expo-av';
 
 type Props = NativeStackScreenProps<RootStackparamlist, 'PlayerScreen'>;
 
@@ -19,39 +19,56 @@ const PlayerScreen: React.FC<Props> = ({ navigation, route }) => {
 
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
+  const [playbackStatus, setPlaybackStatus] = useState<AVPlaybackStatus | undefined>()
+
+  const demoURL = 'http://streams.radio.co/s0aa1e6f4a/listen'
+
   const initialize = async (sourceURL: string) => {
-    console.log('Loading Sound');
-    const { sound } = await Audio.Sound.createAsync({ uri: sourceURL });
-    setSound(sound);
+    console.log(`Initializing: ${sourceURL}`);
+    try {
+      const { sound } = await Audio.Sound.createAsync({ uri: sourceURL }, { shouldPlay: true })
+      const status = await sound.playAsync();
+      setPlaybackStatus(status)
+      setSound(sound)
+      setIsInitializing(false)
+      setIsPlaying(true)
+    } catch (err) {
+      console.log(`error: ${err}`)
+    }
   }
 
   const pauseSound = async () => {
     console.log('Pausing Sound');
-    await sound.pauseAsync();
-    setIsPlaying(false)
+    try {
+      const status = await sound.pauseAsync();
+      setSound(sound)
+      setPlaybackStatus(status)
+      setIsPlaying(false)
+    } catch (err) {
+      console.log(`error: ${err}`)
+    }
   }
 
   const playSound = async () => {
-    console.log(`Loading Sound: ${sourceURL}`);
-    const { sound } = await Audio.Sound.createAsync({ uri: sourceURL })
-    Audio.Sound.createAsync({ uri: sourceURL }).catch((error) => {
-      `${error}`
-    });
-    console.log(`${sound}`)
-    setSound(sound);
-    console.log('Playing Sound');
-    await sound.playAsync();
-    setIsPlaying(true)
+    try {
+      const status = await sound.playAsync();
+      setPlaybackStatus(status)
+      setIsPlaying(true)
+      console.log('Play Sound');
+    } catch (err) {
+      console.log(`error: ${err}`)
+    }
   }
 
   useEffect(() => {
+    initialize(demoURL)
     return sound
       ? () => {
         console.log('Unloading Sound');
         sound.unloadAsync();
       }
       : undefined;
-  }, [sound])
+  }, [])
 
 
   return (
@@ -67,10 +84,7 @@ const PlayerScreen: React.FC<Props> = ({ navigation, route }) => {
           <View style={styles.imageBox}>
             <Image
               style={styles.image}
-              source={{
-                uri: sumbnailURL
-              }
-              }
+              source={{ uri: sumbnailURL }}
             />
           </View>
         </View>
@@ -89,15 +103,16 @@ const PlayerScreen: React.FC<Props> = ({ navigation, route }) => {
           </IconButton>
           <View style={{ padding: 32 }} ></View>
           {
-            isInitializing ? <IconButton
-              onPress={async () => {
-                isPlaying ? await pauseSound() : await playSound()
-              }}>
-              <FontAwesome name={isPlaying ? "play" : "pause"} size={32} />
-            </IconButton> :
+            isInitializing ?
               <View>
                 <ActivityIndicator />
-              </View>
+              </View> :
+              <IconButton
+                onPress={async () => {
+                  isPlaying ? await pauseSound() : await playSound()
+                }}>
+                <FontAwesome name={isPlaying ? "pause" : "play"} size={32} />
+              </IconButton>
           }
           <View style={{ padding: 32 }} ></View>
           <IconButton
