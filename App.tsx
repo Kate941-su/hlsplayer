@@ -2,7 +2,7 @@ import React from 'react';
 import { StatusBar } from 'react-native';
 import { Provider } from 'react-redux'
 import { store } from './app/store'
-import { MainScreen } from './view/index';
+import { MainScreen, SplashScreen } from './view/index';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -19,6 +19,13 @@ export default function App() {
         <StatusBar barStyle="default" />
         <NavigationContainer>
           <Stack.Navigator>
+            <Stack.Screen
+              name="SplashScreen"
+              component={SplashScreen}
+              options={{
+                headerShown: false
+              }}
+            />
             <Stack.Screen
               name="MainScreen"
               component={MainScreen}

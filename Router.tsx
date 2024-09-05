@@ -7,4 +7,5 @@ export type RootStackparamlist = {
     subtitle?: string
     sumbnailURL?: string
   };
+  SplashScreen: undefined
 }
