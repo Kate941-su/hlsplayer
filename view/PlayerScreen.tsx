@@ -5,11 +5,13 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ActivityIndicator, Appbar } from 'react-native-paper';
 import { IconButton } from '../components';
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
-// import TrackPlayer from 'react-native-track-player';
+import { Audio } from 'expo-av';
 
 type Props = NativeStackScreenProps<RootStackparamlist, 'PlayerScreen'>;
 
 const PlayerScreen: React.FC<Props> = ({ navigation, route }) => {
+
+  const [sound, setSound] = useState<Audio.Sound | undefined>(undefined);
 
   const { sumbnailURL, sourceURL, title, subtitle } = route.params
 
@@ -17,35 +19,39 @@ const PlayerScreen: React.FC<Props> = ({ navigation, route }) => {
 
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
-  const play = async () => {
-    // await TrackPlayer.play()
-    // setIsPlaying(true)
+  const initialize = async (sourceURL: string) => {
+    console.log('Loading Sound');
+    const { sound } = await Audio.Sound.createAsync({ uri: sourceURL });
+    setSound(sound);
   }
 
-  const pause = async () => {
-    // await TrackPlayer.pause()
-    // setIsPlaying(false)
+  const pauseSound = async () => {
+    console.log('Pausing Sound');
+    await sound.pauseAsync();
+    setIsPlaying(false)
+  }
+
+  const playSound = async () => {
+    console.log(`Loading Sound: ${sourceURL}`);
+    const { sound } = await Audio.Sound.createAsync({ uri: sourceURL })
+    Audio.Sound.createAsync({ uri: sourceURL }).catch((error) => {
+      `${error}`
+    });
+    console.log(`${sound}`)
+    setSound(sound);
+    console.log('Playing Sound');
+    await sound.playAsync();
+    setIsPlaying(true)
   }
 
   useEffect(() => {
-    // const initialize = async () => {
-    //   await TrackPlayer.add({
-    //     url: sourceURL,
-    //     title: title,
-    //     // TODO: 
-    //     artist: '',
-    //     artwork: sumbnailURL
-    //   });
-    // }
-    // initialize().then(() => {
-    //   setIsInitializing(false)
-    //   TrackPlayer.play()
-    //   return
-    // }).catch((e) => {
-    //   setIsInitializing(false)
-    //   console.log(`[PlayerScreen] Failed to play TrackPlayer because: ${e}`)
-    // })
-  }, [])
+    return sound
+      ? () => {
+        console.log('Unloading Sound');
+        sound.unloadAsync();
+      }
+      : undefined;
+  }, [sound])
 
 
   return (
@@ -64,10 +70,6 @@ const PlayerScreen: React.FC<Props> = ({ navigation, route }) => {
               source={{
                 uri: sumbnailURL
               }
-                //   (route.params.sourceURL != undefined || route.params.sourceURL == "") ? {
-                //   uri: 'https://reactnative.dev/img/tiny_logo.png',
-                // } :
-                //   require('../assets/images/noimage.png')
               }
             />
           </View>
@@ -89,7 +91,7 @@ const PlayerScreen: React.FC<Props> = ({ navigation, route }) => {
           {
             isInitializing ? <IconButton
               onPress={async () => {
-                isPlaying ? await pause() : await play()
+                isPlaying ? await pauseSound() : await playSound()
               }}>
               <FontAwesome name={isPlaying ? "play" : "pause"} size={32} />
             </IconButton> :

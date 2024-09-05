@@ -9,26 +9,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { RootStackparamlist } from './Router';
 import RegisterScreen from './view/RegisterScreen';
 import PlayerScreen from './view/PlayerScreen';
-import { AppRegistry } from "react-native";
-
-import { enableScreens } from "react-native-screens";
-import { expo } from "./app.json";
-
-// AppRegistry.registerComponent(expo.name, () => App);
-// TrackPlayer.registerPlaybackService(() => {
-//   console.log("registered");
-//   return require("./trackPlayer/playerService");
-// });
-
-// TrackPlayer.setupPlayer()
-//   .then(() => {
-//     console.log(`Music Player is succeeded to launch`);
-//   })
-//   .catch((e) => {
-//     console.log(`Music Player is failed to launch because ${e}`);
-//   });
-
-// enableScreens();
 
 const Stack = createNativeStackNavigator<RootStackparamlist>()
 
