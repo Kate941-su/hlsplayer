@@ -7,9 +7,12 @@ import { IconButton } from '../components';
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
 import { Audio, AVPlaybackStatus } from 'expo-av';
 
+
 type Props = NativeStackScreenProps<RootStackparamlist, 'PlayerScreen'>;
 
 const PlayerScreen: React.FC<Props> = ({ navigation, route }) => {
+
+  const demoURL = 'https://stream.friskyradio.com/'
 
   const [sound, setSound] = useState<Audio.Sound | undefined>(undefined);
 
@@ -17,15 +20,28 @@ const PlayerScreen: React.FC<Props> = ({ navigation, route }) => {
 
   const [isInitializing, setIsInitializing] = useState<boolean>(true);
 
+  const [isValidURL, setIsValidURL] = useState<boolean>(true)
+
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
   const [playbackStatus, setPlaybackStatus] = useState<AVPlaybackStatus | undefined>()
 
-  const demoURL = 'http://streams.radio.co/s0aa1e6f4a/listen'
+  // const getIsValidURL = async (url: string): Promise<boolean> => {
+  //   const status = await fetch(url)
+  //   console.log(status.status)
+  //   return status.ok
+  // }
 
   const initialize = async (sourceURL: string) => {
     console.log(`Initializing: ${sourceURL}`);
     try {
+      // const isURLValid = await getIsValidURL(sourceURL)
+      // setIsValidURL(isURLValid)
+      // if (!isValidURL) {
+      //   console.log(`Invalid URL`)
+      //   setIsInitializing(false)
+      //   return
+      // }
       const { sound } = await Audio.Sound.createAsync({ uri: sourceURL }, { shouldPlay: true })
       const status = await sound.playAsync();
       setPlaybackStatus(status)
@@ -34,6 +50,8 @@ const PlayerScreen: React.FC<Props> = ({ navigation, route }) => {
       setIsPlaying(true)
     } catch (err) {
       console.log(`error: ${err}`)
+      setIsValidURL(false)
+      setIsInitializing(false)
     }
   }
 
@@ -67,7 +85,9 @@ const PlayerScreen: React.FC<Props> = ({ navigation, route }) => {
         console.log('Unloading Sound');
         sound.unloadAsync();
       }
-      : undefined;
+      : () => {
+        console.log('[PlayerScreen] Disposed');
+      };
   }, [])
 
 
@@ -102,6 +122,9 @@ const PlayerScreen: React.FC<Props> = ({ navigation, route }) => {
             <FontAwesome name={"star-o"} size={32} />
           </IconButton>
           <View style={{ padding: 32 }} ></View>
+          {
+            isValidURL ? <View /> : <Text>Invalid URL</Text>
+          }
           {
             isInitializing ?
               <View>
